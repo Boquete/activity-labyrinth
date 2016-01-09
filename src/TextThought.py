@@ -26,9 +26,9 @@
 # news is that much of the complexity disappears.
 # --Walter Bender <walter@sugarlabs.org> 2013
 
-import gtk
-import gobject
-import pango
+from gi.repository import Gtk
+from gi.repository import GObject
+from gi.repository import Pango
 import utils
 import string
 import os
@@ -62,7 +62,7 @@ class TextThought (ResizableThought):
 		self.moving = False
 		self.preedit = None
 		self.attrlist = None
-		self.attributes = pango.AttrList()
+		self.attributes = Pango.AttrList()
 		self.current_attrs = []
 		self.double_click = False
 		self.orig_text = None
@@ -72,10 +72,10 @@ class TextThought (ResizableThought):
 		self._textview_handler = None
 		self._clipboard = None
 
-		if prefs.get_direction () == gtk.TEXT_DIR_LTR:
-			self.pango_context.set_base_dir (pango.DIRECTION_LTR)
+		if prefs.get_direction () == Gtk.TextDirection.LTR:
+			self.pango_context.set_base_dir (Pango.DIRECTION_LTR)
 		else:
-			self.pango_context.set_base_dir (pango.DIRECTION_RTL)
+			self.pango_context.set_base_dir (Pango.DIRECTION_RTL)
 
 		self.b_f_i = self.bindex_from_index
 		margin = utils.margin_required (utils.STYLE_NORMAL)
@@ -114,7 +114,7 @@ class TextThought (ResizableThought):
 		underline = False
 		pango_font = None
 		del self.attrlist
-		self.attrlist = pango.AttrList ()
+		self.attrlist = Pango.AttrList ()
 		# TODO: splice instead of own method
 		it = self.attributes.get_iterator()
 
@@ -171,42 +171,42 @@ class TextThought (ResizableThought):
 
 			if found:
 				# FIXME: the it.get() seems to crash python
-				# through pango.
+				# through Pango.
 				attr = it.get_attrs()
 				for x in attr:
-					if x.type == pango.ATTR_WEIGHT and \
-					   x.value == pango.WEIGHT_BOLD:
+					if x.type == Pango.ATTR_WEIGHT and \
+					   x.value == Pango.Weight.BOLD:
 						bold = True
-					elif x.type == pango.ATTR_STYLE and \
-						 x.value == pango.STYLE_ITALIC:
+					elif x.type == Pango.ATTR_STYLE and \
+						 x.value == Pango.Style.ITALIC:
 						italics = True
-					elif x.type == pango.ATTR_UNDERLINE and \
-						 x.value == pango.UNDERLINE_SINGLE:
+					elif x.type == Pango.ATTR_UNDERLINE and \
+						 x.value == Pango.Underline.SINGLE:
 						underline = True
-					elif x.type == pango.ATTR_FONT_DESC:
+					elif x.type == Pango.ATTR_FONT_DESC:
 						pango_font = x.desc
 			if it.next() == False:
 				break
 		to_add = []
 		if bold:
-			to_add.append(pango.AttrWeight(pango.WEIGHT_BOLD, self.index, self.index))
+			to_add.append(Pango.AttrWeight(Pango.Weight.BOLD, self.index, self.index))
 		if italics:
-			to_add.append(pango.AttrStyle(pango.STYLE_ITALIC, self.index, self.index))
+			to_add.append(Pango.AttrStyle(Pango.Style.ITALIC, self.index, self.index))
 		if underline:
-			to_add.append(pango.AttrUnderline(pango.UNDERLINE_SINGLE, self.index, self.index))
+			to_add.append(Pango.AttrUnderline(Pango.Underline.SINGLE, self.index, self.index))
 		if pango_font:
-			to_add.append(pango.AttrFontDesc(pango_font, self.index, self.index))
+			to_add.append(Pango.AttrFontDesc(pango_font, self.index, self.index))
 		for x in self.current_attrs:
-			if x.type == pango.ATTR_WEIGHT and x.value == pango.WEIGHT_BOLD:
+			if x.type == Pango.ATTR_WEIGHT and x.value == Pango.Weight.BOLD:
 				bold = True
 				to_add.append(x)
-			if x.type == pango.ATTR_STYLE and x.value == pango.STYLE_ITALIC:
+			if x.type == Pango.ATTR_STYLE and x.value == Pango.Style.ITALIC:
 				italics = True
 				to_add.append(x)
-			if x.type == pango.ATTR_UNDERLINE and x.value == pango.UNDERLINE_SINGLE:
+			if x.type == Pango.ATTR_UNDERLINE and x.value == Pango.Underline.SINGLE:
 				underline = True
 				to_add.append(x)
-			if x.type == pango.ATTR_FONT_DESC:
+			if x.type == Pango.ATTR_FONT_DESC:
 				pango_font = x.desc
 				to_add.append(x)
 		del self.current_attrs
@@ -226,13 +226,13 @@ class TextThought (ResizableThought):
 		g *= 65536
 		b *= 65536
 		if self.index > self.end_index:
-			bgsel = pango.AttrBackground (int(r), int(g), int(b), self.end_index, self.index)
+			bgsel = Pango.AttrBackground (int(r), int(g), int(b), self.end_index, self.index)
 		else:
-			bgsel = pango.AttrBackground (int(r), int(g), int(b), self.index, self.end_index)
+			bgsel = Pango.AttrBackground (int(r), int(g), int(b), self.index, self.end_index)
 		self.attrlist.insert (bgsel)
 		'''
 
-		self.layout = pango.Layout (self.pango_context)
+		self.layout = Pango.Layout (self.pango_context)
 		self.layout.set_text (show_text)
 		self.layout.set_attributes(self.attrlist)
 
@@ -250,11 +250,11 @@ class TextThought (ResizableThought):
 		self.max_y = self.min_y + text_h
 
 		"""
-		if prefs.get_direction () == gtk.TEXT_DIR_LTR:
+		if prefs.get_direction () == Gtk.TextDirection.LTR:
 			self.text_location = (self.ul[0] + margin[0], self.ul[1] + margin[1])
 			self.lr = (text_w + self.text_location[0]+margin[2], text_h + self.text_location[1] + margin[3])
 		else:
-			self.layout.set_alignment (pango.ALIGN_RIGHT)
+			self.layout.set_alignment (Pango.Alignment.RIGHT)
 			tmp1 = self.ul[1]
 			if not self.lr:
 				self.lr = (self.ul[0], self.ul[1] + text_h + margin[1] + margin[3])
@@ -335,7 +335,7 @@ class TextThought (ResizableThought):
 				break
 
 		del self.attributes
-		self.attributes = pango.AttrList()
+		self.attributes = Pango.AttrList()
 		for x in changes:
 			self.attributes.change(x)
 
@@ -361,7 +361,7 @@ class TextThought (ResizableThought):
 		else:
 			r, g ,b = utils.gtk_to_cairo_color(utils.default_colors["text"])
 		context.set_source_rgb (r, g, b)
-		self.layout.set_alignment(pango.ALIGN_CENTER)
+		self.layout.set_alignment(Pango.Alignment.CENTER)
 		context.move_to (textx, texty)
 		context.show_layout (self.layout)
 		if self.editing:
@@ -370,10 +370,10 @@ class TextThought (ResizableThought):
 			else:
 				(strong, weak) = self.layout.get_cursor_pos (self.index)
 			(startx, starty, curx,cury) = strong
-			startx /= pango.SCALE
-			starty /= pango.SCALE
-			curx /= pango.SCALE
-			cury /= pango.SCALE
+			startx /= Pango.SCALE
+			starty /= Pango.SCALE
+			curx /= Pango.SCALE
+			cury /= Pango.SCALE
 			context.move_to (textx + startx, texty + starty)
 			context.line_to (textx + startx, texty + starty + cury)
 			context.stroke ()
@@ -388,44 +388,44 @@ class TextThought (ResizableThought):
 		else:
 			return True
 
-		modifiers = gtk.accelerator_get_default_mod_mask ()
-		shift = event.state & modifiers == gtk.gdk.SHIFT_MASK
+		modifiers = Gtk.accelerator_get_default_mod_mask ()
+		shift = event.get_state() & modifiers == Gdk.ModifierType.SHIFT_MASK
 		handled = True
 		clear_attrs = True
 		if not self.editing:
 			return False
 
-		if (event.state & modifiers) & gtk.gdk.CONTROL_MASK:
-			if event.keyval == gtk.keysyms.a:
+		if (event.get_state() & modifiers) & Gdk.ModifierType.CONTROL_MASK:
+			if event.keyval == Gdk.KEY_a:
 				self.index = self.bindex = 0
 				self.end_index = len (self.text)
-		elif event.keyval == gtk.keysyms.Escape:
+		elif event.keyval == Gdk.KEY_Escape:
 			self.leave()
-		elif event.keyval == gtk.keysyms.Left:
-			if prefs.get_direction() == gtk.TEXT_DIR_LTR:
+		elif event.keyval == Gdk.KEY_Left:
+			if prefs.get_direction() == Gtk.TextDirection.LTR:
 				self.move_index_back (shift)
 			else:
 				self.move_index_forward (shift)
-		elif event.keyval == gtk.keysyms.Right:
-			if prefs.get_direction() == gtk.TEXT_DIR_RTL:
+		elif event.keyval == Gdk.KEY_Right:
+			if prefs.get_direction() == Gtk.TextDirection.RTL:
 				self.move_index_back (shift)
 			else:
 				self.move_index_forward (shift)
-		elif event.keyval == gtk.keysyms.Up:
+		elif event.keyval == Gdk.KEY_Up:
 			self.move_index_up (shift)
-		elif event.keyval == gtk.keysyms.Down:
+		elif event.keyval == Gdk.KEY_Down:
 			self.move_index_down (shift)
-		elif event.keyval == gtk.keysyms.Home:
-			if prefs.get_direction() == gtk.TEXT_DIR_LTR:
+		elif event.keyval == Gdk.KEY_Home:
+			if prefs.get_direction() == Gtk.TextDirection.LTR:
 				self.move_index_horizontal (shift, True)	# move home
 			else:
 				self.move_index_horizontal (shift)			# move end
 			self.move_index_horizontal (shift, True)		# move home
-		elif event.keyval == gtk.keysyms.End:
+		elif event.keyval == Gdk.KEY_End:
 			self.move_index_horizontal (shift)			# move
-		elif event.keyval == gtk.keysyms.BackSpace and self.editing:
+		elif event.keyval == Gdk.KEY_BackSpace and self.editing:
 			self.backspace_char ()
-		elif event.keyval == gtk.keysyms.Delete and self.editing:
+		elif event.keyval == Gdk.KEY_Delete and self.editing:
 			self.delete_char ()
 		elif len (event.string) != 0:
 			self.add_text (event.string)
@@ -467,7 +467,7 @@ class TextThought (ResizableThought):
 			self.bindex = self.b_f_i (self.index)
 
 		del self.attributes
-		self.attributes = pango.AttrList()
+		self.attributes = Pango.AttrList()
 		map(lambda a : self.attributes.change(a), attrs)
 		self.recalc_edges ()
 		self.emit ("title_changed", self.text)
@@ -541,7 +541,7 @@ class TextThought (ResizableThought):
 				break
 
 		del self.attributes
-		self.attributes = pango.AttrList()
+		self.attributes = Pango.AttrList()
 		map(lambda a : self.attributes.change(a), changes)
 
 		self.undo.add_undo (UndoManager.UndoAction (self, UndoManager.DELETE_LETTER, self.undo_text_action,
@@ -619,7 +619,7 @@ class TextThought (ResizableThought):
 				break
 
 		del self.attributes
-		self.attributes = pango.AttrList()
+		self.attributes = Pango.AttrList()
 		map(lambda a : self.attributes.change(a), changes)
 
 		self.text = left+right
@@ -733,27 +733,27 @@ class TextThought (ResizableThought):
 		# if not self.editing:
 		# 	return False
 
-		modifiers = gtk.accelerator_get_default_mod_mask ()
+		modifiers = Gtk.accelerator_get_default_mod_mask ()
 
 		if event.button == 1:
-			if event.type == gtk.gdk.BUTTON_PRESS:
-				x = int ((coords[0] - self.min_x)*pango.SCALE)
-				y = int ((coords[1] - self.min_y)*pango.SCALE)
+			if event.type == Gdk.EventType.BUTTON_PRESS:
+				x = int ((coords[0] - self.min_x)*Pango.SCALE)
+				y = int ((coords[1] - self.min_y)*Pango.SCALE)
 				loc = self.layout.xy_to_index (x, y)
 				self.index = loc[0]
 				if loc[0] >= len(self.text) -1 or self.text[loc[0]+1] == '\n':
 					self.index += loc[1]
 				self.bindex = self.bindex_from_index (self.index)
-				if not (event.state & modifiers) & gtk.gdk.SHIFT_MASK:
+				if not (event.get_state() & modifiers) & Gdk.ModifierType.SHIFT_MASK:
 					self.end_index = self.index
-			elif event.type == gtk.gdk._2BUTTON_PRESS:
+			elif event.type == Gdk._2BUTTON_PRESS:
 				self.index = len(self.text)
 				self.end_index = 0						# and mark all
 				self.double_click = True
 
 		elif event.button == 2:
-			x = int ((coords[0] - self.min_x)*pango.SCALE)
-			y = int ((coords[1] - self.min_y)*pango.SCALE)
+			x = int ((coords[0] - self.min_x)*Pango.SCALE)
+			y = int ((coords[1] - self.min_y)*Pango.SCALE)
 			loc = self.layout.xy_to_index (x, y)
 			self.index = loc[0]
 			if loc[0] >= len(self.text) -1 or self.text[loc[0]+1] == '\n':
@@ -761,7 +761,7 @@ class TextThought (ResizableThought):
 			self.bindex = self.bindex_from_index (self.index)
 			self.end_index = self.index
 			if os.name != 'nt':
-				clip = gtk.Clipboard (selection="PRIMARY")
+				clip = Gtk.Clipboard (selection="PRIMARY")
 				self.paste_text (clip)
 
 		del self.current_attrs
@@ -777,12 +777,12 @@ class TextThought (ResizableThought):
 		# on-screen keyboard) instead of processing the text
 		# by grabbing keyboard events.
 		if self.textview is None:
-			self.textview = gtk.TextView()
+			self.textview = Gtk.TextView()
 			margin = utils.margin_required (utils.STYLE_NORMAL)
 			x, y, w, h = self.textview_rescale()
 			self.textview.set_size_request(w, h)
 			self._fixed.put(self.textview, x, y)
-		self.textview.set_justification(gtk.JUSTIFY_CENTER)
+		self.textview.set_justification(Gtk.Justification.CENTER)
 
 		font, size = None, None
 		bold, italic, underline = False, False, False
@@ -791,13 +791,13 @@ class TextThought (ResizableThought):
 		while (1):
 			r = it.range()
 			for x in it.get_attrs():
-				if x.type == pango.ATTR_WEIGHT and x.value == pango.WEIGHT_BOLD:
+				if x.type == Pango.ATTR_WEIGHT and x.value == Pango.Weight.BOLD:
 					bold = True
-				elif x.type == pango.ATTR_STYLE and x.value == pango.STYLE_ITALIC:
+				elif x.type == Pango.ATTR_STYLE and x.value == Pango.Style.ITALIC:
 					italic = True
-				elif x.type == pango.ATTR_UNDERLINE and x.value == pango.UNDERLINE_SINGLE:
+				elif x.type == Pango.ATTR_UNDERLINE and x.value == Pango.Underline.SINGLE:
 					underline = True
-				elif x.type == pango.ATTR_FONT_DESC:
+				elif x.type == Pango.ATTR_FONT_DESC:
 					parts = x.desc.to_string ().split()
 					font = string.join(parts[0:-2])
 					size = parts[-1]
@@ -809,19 +809,19 @@ class TextThought (ResizableThought):
 			font = 'Sans'
 		if size is None:
 			size = utils.default_font_size
-                font_desc = pango.FontDescription(font)
+                font_desc = Pango.FontDescription(font)
                 font_desc.set_size(
-                    int(int(size) * pango.SCALE * self._parent.scale_fac))
+                    int(int(size) * Pango.SCALE * self._parent.scale_fac))
 		if bold:
-			font_desc.set_weight(pango.WEIGHT_BOLD)
+			font_desc.set_weight(Pango.Weight.BOLD)
 		if italic:
-			font_desc.set_style(pango.STYLE_ITALIC)
+			font_desc.set_style(Pango.Style.ITALIC)
 		self.textview.modify_font(font_desc)
 
 		r, g, b = utils.gtk_to_cairo_color(self.foreground_color)
-		rgba = gtk.gdk.Color(
+		rgba = Gdk.Color(
 			int(65535 * r), int(65535 * g), int(65535 * b))
-		self.textview.modify_text(gtk.STATE_NORMAL, rgba)
+		self.textview.modify_text(Gtk.StateType.NORMAL, rgba)
 
 		self.textview.get_buffer().set_text(self.text)
                 self.textview.show()
@@ -851,9 +851,9 @@ class TextThought (ResizableThought):
 		h = int((self.height - margin[1] - margin[3]) \
 				* self._parent.scale_fac)
 		# h = max(h, margin[1] + margin[3])
-		xo = gtk.gdk.screen_width() \
+		xo = Gdk.Screen.width() \
 		    * (1. - self._parent.scale_fac) / 2.
-		yo = gtk.gdk.screen_height() \
+		yo = Gdk.Screen.height() \
 		    * (1. - self._parent.scale_fac) / 1.25  # FIXME
 		x = (self.ul[0] + margin[0]) * self._parent.scale_fac
 		y = (self.ul[1] + margin[1]) * self._parent.scale_fac
@@ -931,11 +931,11 @@ class TextThought (ResizableThought):
 		if not self.editing or self.resizing:
 			return False
 
-		if event.state & gtk.gdk.BUTTON1_MASK and not self.double_click:
+		if event.get_state() & Gdk.ModifierType.BUTTON1_MASK and not self.double_click:
 			if transformed[0] < self.max_x and transformed[0] > self.min_x and \
 			   transformed[1] < self.max_y and transformed[1] > self.min_y:
-				x = int ((transformed[0] - self.min_x)*pango.SCALE)
-				y = int ((transformed[1] - self.min_y)*pango.SCALE)
+				x = int ((transformed[0] - self.min_x)*Pango.SCALE)
+				y = int ((transformed[1] - self.min_y)*Pango.SCALE)
 				loc = self.layout.xy_to_index (x, y)
 				self.index = loc[0]
 				if loc[0] >= len(self.text) -1 or self.text[loc[0]+1] == '\n':
@@ -1001,25 +1001,25 @@ class TextThought (ResizableThought):
 		while (1):
 			r = it.range()
 			for x in it.get_attrs():
-				if x.type == pango.ATTR_WEIGHT and x.value == pango.WEIGHT_BOLD:
+				if x.type == Pango.ATTR_WEIGHT and x.value == Pango.Weight.BOLD:
 					elem = doc.createElement ("attribute")
 					self.element.appendChild (elem)
 					elem.setAttribute("start", str(r[0]))
 					elem.setAttribute("end", str(r[1]))
 					elem.setAttribute("type", "bold")
-				elif x.type == pango.ATTR_STYLE and x.value == pango.STYLE_ITALIC:
+				elif x.type == Pango.ATTR_STYLE and x.value == Pango.Style.ITALIC:
 					elem = doc.createElement ("attribute")
 					self.element.appendChild (elem)
 					elem.setAttribute("start", str(r[0]))
 					elem.setAttribute("end", str(r[1]))
 					elem.setAttribute("type", "italics")
-				elif x.type == pango.ATTR_UNDERLINE and x.value == pango.UNDERLINE_SINGLE:
+				elif x.type == Pango.ATTR_UNDERLINE and x.value == Pango.Underline.SINGLE:
 					elem = doc.createElement ("attribute")
 					self.element.appendChild (elem)
 					elem.setAttribute("start", str(r[0]))
 					elem.setAttribute("end", str(r[1]))
 					elem.setAttribute("type", "underline")
-				elif x.type == pango.ATTR_FONT_DESC:
+				elif x.type == Pango.ATTR_FONT_DESC:
 					elem = doc.createElement ("attribute")
 					self.element.appendChild (elem)
 					elem.setAttribute("start", str(r[0]))
@@ -1067,9 +1067,9 @@ class TextThought (ResizableThought):
 		self.identity = int (node.getAttribute ("identity"))
 		try:
 			tmp = node.getAttribute ("background-color")
-			self.background_color = gtk.gdk.color_parse(tmp)
+			self.background_color = Gdk.color_parse(tmp)
 			tmp = node.getAttribute ("foreground-color")
-			self.foreground_color = gtk.gdk.color_parse(tmp)
+			self.foreground_color = Gdk.color_parse(tmp)
 		except ValueError:
 			pass
 
@@ -1087,15 +1087,15 @@ class TextThought (ResizableThought):
 				end = int(n.getAttribute("end"))
 
 				if attrType == "bold":
-					attr = pango.AttrWeight(pango.WEIGHT_BOLD, start, end)
+					attr = Pango.AttrWeight(Pango.Weight.BOLD, start, end)
 				elif attrType == "italics":
-					attr = pango.AttrStyle(pango.STYLE_ITALIC, start, end)
+					attr = Pango.AttrStyle(Pango.Style.ITALIC, start, end)
 				elif attrType == "underline":
-					attr = pango.AttrUnderline(pango.UNDERLINE_SINGLE, start, end)
+					attr = Pango.AttrUnderline(Pango.Underline.SINGLE, start, end)
 				elif attrType == "font":
 					font_name = str(n.getAttribute("value"))
-					pango_font = pango.FontDescription (font_name)
-					attr = pango.AttrFontDesc (pango_font, start, end)
+					pango_font = Pango.FontDescription (font_name)
+					attr = Pango.AttrFontDesc (pango_font, start, end)
 				self.attributes.change(attr)
 			else:
 				print "Unknown: "+n.nodeName
@@ -1173,7 +1173,7 @@ class TextThought (ResizableThought):
 				break
 
 		del self.attributes
-		self.attributes = pango.AttrList()
+		self.attributes = Pango.AttrList()
 		map(lambda x : self.attributes.change(x), changes)
 
 		self.recalc_edges ()
@@ -1221,22 +1221,22 @@ class TextThought (ResizableThought):
 
 	def create_attribute(self, attribute, start, end):
 		if attribute == 'bold':
-			return pango.AttrWeight(pango.WEIGHT_BOLD, start, end)
+			return Pango.AttrWeight(Pango.Weight.BOLD, start, end)
 		elif attribute == 'italic':
-			return pango.AttrStyle(pango.STYLE_ITALIC, start, end)
+			return Pango.AttrStyle(Pango.Style.ITALIC, start, end)
 		elif attribute == 'underline':
-			return pango.AttrUnderline(pango.UNDERLINE_SINGLE, start, end)
+			return Pango.AttrUnderline(Pango.Underline.SINGLE, start, end)
 
 	def set_attribute(self, active, attribute):
 		# if not self.editing:
 		# 	return
 
 		if attribute == 'bold':
-			pstyle, ptype, pvalue = (pango.WEIGHT_NORMAL, pango.ATTR_WEIGHT, pango.WEIGHT_BOLD)
+			pstyle, ptype, pvalue = (Pango.Weight.NORMAL, Pango.ATTR_WEIGHT, Pango.Weight.BOLD)
 		elif attribute == 'italic':
-			pstyle, ptype, pvalue = (pango.STYLE_NORMAL, pango.ATTR_STYLE, pango.STYLE_ITALIC)
+			pstyle, ptype, pvalue = (Pango.Style.NORMAL, Pango.ATTR_STYLE, Pango.Style.ITALIC)
 		elif attribute == 'underline':
-			pstyle, ptype, pvalue = (pango.UNDERLINE_NONE, pango.ATTR_UNDERLINE, pango.UNDERLINE_SINGLE)
+			pstyle, ptype, pvalue = (Pango.Underline.NONE, Pango.ATTR_UNDERLINE, Pango.Underline.SINGLE)
 
 		# Always modify whole string
 		self.index = 0
@@ -1247,7 +1247,7 @@ class TextThought (ResizableThought):
 		end = max(index, end_index)
 
 		if not active:
-			attr = pango.AttrStyle(pstyle, init, end)
+			attr = Pango.AttrStyle(pstyle, init, end)
 			#if index == end_index:
 			#	self.current_attrs.change(attr)
 			#else:
@@ -1288,7 +1288,7 @@ class TextThought (ResizableThought):
 					break
 
 			del self.attributes
-			self.attributes = pango.AttrList()
+			self.attributes = Pango.AttrList()
 			map(lambda x : self.attributes.change(x), changed)
 			tmp = []
 			for x in self.current_attrs:
@@ -1340,9 +1340,9 @@ class TextThought (ResizableThought):
 		end = max(self.index, self.end_index)
 
 
-		pango_font = pango.FontDescription('%s %s' % (font_name, str(font_size)))
+		pango_font = Pango.FontDescription('%s %s' % (font_name, str(font_size)))
 
-		attr = pango.AttrFontDesc (pango_font, start, end)
+		attr = Pango.AttrFontDesc (pango_font, start, end)
 
 		if start == end:
 			self.undo.add_undo(UndoManager.UndoAction(self, UNDO_ADD_ATTR,
@@ -1367,7 +1367,7 @@ class TextThought (ResizableThought):
 		if self.editing:
 			if self.textview is not None:
 				self.textview.grab_focus()
-			self.emit ("change_mouse_cursor", gtk.gdk.XTERM)
+			self.emit ("change_mouse_cursor", Gdk.XTERM)
 		else:
 			ResizableThought.inside(self, inside)
 

@@ -22,8 +22,8 @@
 
 import os
 import utils
-import pygtk
-import gtk
+import gi
+from gi.repository import Gtk
 import xml.dom.minidom as dom
 import datetime
 
@@ -91,7 +91,7 @@ class MapList(object):
 
 	_maps = []
 	_maps_by_filename = {}
-	tree_view_model = gtk.ListStore(int, str, str, str, 'gboolean')
+	tree_view_model = Gtk.ListStore(int, str, str, str, 'gboolean')
 
 	def __init__(self):
 		raise Exception("This class is a singleton full of classmethods, dont instantiate it.")
@@ -173,7 +173,7 @@ class MapList(object):
 	def count(cls):
 		return len(cls._maps)
 
-	# these functions wrap the gtk.ListStore that is used as View
+	# these functions wrap the Gtk.ListStore that is used as View
 	@classmethod
 	def get_TreeViewModel(cls):
 		return cls.tree_view_model

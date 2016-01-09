@@ -19,8 +19,8 @@
 # Boston, MA  02110-1301  USA
 #
 
-import gtk
-import pango
+from gi.repository import Gtk
+from gi.repository import Pango
 import utils
 import BaseThought, TextThought
 import prefs
@@ -37,10 +37,10 @@ class ResourceThought (TextThought.TextThought):
 		self.uri = ""
 
 		# TODO: we should handle such things with a singleton
-		self.glade = gtk.glade.XML(utils.get_data_file_name('labyrinth.glade'))
+		self.glade = Gtk.glade.XML(utils.get_data_file_name('labyrinth.glade'))
 		self.dialog = self.glade.get_widget('ResourceChooserDialog')
-		self.dialog.add_buttons(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-			gtk.STOCK_OK, gtk.RESPONSE_OK)
+		self.dialog.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+			Gtk.STOCK_OK, Gtk.ResponseType.OK)
 
 		if not loading:
 			self.process_uri_dialog()
@@ -51,7 +51,7 @@ class ResourceThought (TextThought.TextThought):
 		res = self.dialog.run()
 		self.dialog.hide()
 
-		if res == gtk.RESPONSE_OK:
+		if res == Gtk.ResponseType.OK:
 			# FIXME: validate input
 			self.uri = self.glade.get_widget('urlEntry').get_text()
 			if initial:
@@ -59,10 +59,10 @@ class ResourceThought (TextThought.TextThought):
 			self.rebuild_byte_table()
 
 	def process_button_down (self, event, mode, transformed):
-		modifiers = gtk.accelerator_get_default_mod_mask ()
-		if event.type == gtk.gdk.BUTTON_PRESS and not self.editing:
-			self.emit ("select_thought", event.state & modifiers)
-		if event.button == 1 and mode == BaseThought.MODE_TEXT and event.type == gtk.gdk._2BUTTON_PRESS:
+		modifiers = Gtk.accelerator_get_default_mod_mask ()
+		if event.type == Gdk.EventType.BUTTON_PRESS and not self.editing:
+			self.emit ("select_thought", event.get_state() & modifiers)
+		if event.button == 1 and mode == BaseThought.MODE_TEXT and event.type == Gdk._2BUTTON_PRESS:
 			if self.uri.find("http://") == -1:
 				webbrowser.open("http://" + self.uri)
 			else:
@@ -90,7 +90,7 @@ class ResourceThought (TextThought.TextThought):
 				self.am_selected, self.am_primary, self.background_color, False, True)
 		else:
 			ux, uy = self.ul
-			if prefs.get_direction() == gtk.TEXT_DIR_LTR:
+			if prefs.get_direction() == Gtk.TextDirection.LTR:
 				context.move_to (ux, uy+5)
 				context.line_to (ux, uy)
 				context.line_to (ux+5, uy)
@@ -112,10 +112,10 @@ class ResourceThought (TextThought.TextThought):
 			else:
 				(strong, weak) = self.layout.get_cursor_pos (self.index)
 			(startx, starty, curx,cury) = strong
-			startx /= pango.SCALE
-			starty /= pango.SCALE
-			curx /= pango.SCALE
-			cury /= pango.SCALE
+			startx /= Pango.SCALE
+			starty /= Pango.SCALE
+			curx /= Pango.SCALE
+			cury /= Pango.SCALE
 			context.move_to (textx + startx, texty + starty)
 			context.line_to (textx + startx, texty + starty + cury)
 			context.stroke ()
@@ -123,14 +123,14 @@ class ResourceThought (TextThought.TextThought):
 		context.stroke ()
 		
 	def get_popup_menu_items(self):
-		image = gtk.Image()
-		image.set_from_stock(gtk.STOCK_EDIT, gtk.ICON_SIZE_MENU)
-		edit_item = gtk.ImageMenuItem(_('Edit Text'))
+		image = Gtk.Image()
+		image.set_from_stock(Gtk.STOCK_EDIT, Gtk.IconSize.MENU)
+		edit_item = Gtk.ImageMenuItem(_('Edit Text'))
 		edit_item.set_image(image)
 		edit_item.connect('activate', self.edit_cb)
-		image = gtk.Image()
-		image.set_from_stock(gtk.STOCK_NETWORK, gtk.ICON_SIZE_MENU)
-		uri_item = gtk.ImageMenuItem(_('Edit URI'))
+		image = Gtk.Image()
+		image.set_from_stock(Gtk.STOCK_NETWORK, Gtk.IconSize.MENU)
+		uri_item = Gtk.ImageMenuItem(_('Edit URI'))
 		uri_item.set_image(image)
 		uri_item.connect('activate', self.edit_uri_cb)
 		return [edit_item, uri_item]

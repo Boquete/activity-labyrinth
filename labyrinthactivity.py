@@ -22,34 +22,34 @@ import time
 from gettext import gettext as _
 import xml.dom.minidom as dom
 
-import gtk
-import gio
-import pango
+from gi.repository import Gtk
+from gi.repository import Gio
+from gi.repository import Pango
 import pangocairo
 import cairo
 
-from sugar.activity import activity
-from sugar.graphics.toolbutton import ToolButton
-from sugar.graphics.radiotoolbutton import RadioToolButton
-from sugar.graphics.colorbutton import ColorToolButton
-from sugar.graphics.menuitem import MenuItem
-from sugar.graphics.icon import Icon
-from sugar.datastore import datastore
-from sugar.graphics import style
+from sugar3.activity import activity
+from sugar3.graphics.toolbutton import ToolButton
+from sugar3.graphics.radiotoolbutton import RadioToolButton
+from sugar3.graphics.colorbutton import ColorToolButton
+from sugar3.graphics.menuitem import MenuItem
+from sugar3.graphics.icon import Icon
+from sugar3.datastore import datastore
+from sugar3.graphics import style
 from port.tarball import Tarball
-from sugar import env
+from sugar3 import env
 
 try:
-    from sugar.graphics.toolbarbox import ToolbarBox
+    from sugar3.graphics.toolbarbox import ToolbarBox
     HASTOOLBARBOX = True
 except ImportError:
     HASTOOLBARBOX = False
     pass
 
 if HASTOOLBARBOX:
-    from sugar.graphics.toolbarbox import ToolbarButton
-    from sugar.activity.widgets import ActivityToolbarButton
-    from sugar.activity.widgets import StopButton
+    from sugar3.graphics.toolbarbox import ToolbarButton
+    from sugar3.activity.widgets import ActivityToolbarButton
+    from sugar3.activity.widgets import StopButton
 
 # labyrinth sources are shipped inside the 'src' subdirectory
 sys.path.append(os.path.join(activity.get_bundle_path(), 'src'))
@@ -79,11 +79,11 @@ class MyMenuItem(MenuItem):
         self._accelerator = None
         self.props.submenu = None
 
-        label = gtk.AccelLabel(text_label)
+        label = Gtk.AccelLabel(label=text_label)
         label.set_alignment(0.0, 0.5)
         label.set_accel_widget(self)
         if text_maxlen > 0:
-            label.set_ellipsize(pango.ELLIPSIZE_MIDDLE)
+            label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
             label.set_max_width_chars(text_maxlen)
         self.add(label)
         label.show()
@@ -94,21 +94,21 @@ class MyMenuItem(MenuItem):
 
         elif icon_name is not None:
             icon = Icon(icon_name=icon_name,
-                        icon_size=gtk.ICON_SIZE_SMALL_TOOLBAR)
+                        icon_size=Gtk.IconSize.SMALL_TOOLBAR)
             if xo_color is not None:
                 icon.props.xo_color = xo_color
             self.set_image(icon)
             icon.show()
 
         elif file_name is not None:
-            icon = Icon(file=file_name, icon_size=gtk.ICON_SIZE_SMALL_TOOLBAR)
+            icon = Icon(file=file_name, icon_size=Gtk.IconSize.SMALL_TOOLBAR)
             if xo_color is not None:
                 icon.props.xo_color = xo_color
             self.set_image(icon)
             icon.show()
 
 
-class FontImage(gtk.Image):
+class FontImage(Gtk.Image):
 
     _FONT_ICON = \
 '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\
@@ -127,9 +127,9 @@ class FontImage(gtk.Image):
 </svg>'
 
     def __init__(self, font_name):
-        super(gtk.Image, self).__init__()
+        super(GObject.GObject.__init__()
 
-        pl = gtk.gdk.PixbufLoader('svg')
+        pl = GdkPixbuf.PixbufLoader('svg')
         pl.write(self._FONT_ICON % (font_name))
         pl.close()
         pixbuf = pl.get_pixbuf()
@@ -153,7 +153,7 @@ class EditToolbar(activity.EditToolbar):
         menu_item.show()
         self.copy.get_palette().menu.append(menu_item)
 
-        self.insert(gtk.SeparatorToolItem(), -1)
+        self.insert(Gtk.SeparatorToolItem(), -1)
 
         self.erase_button = ToolButton('edit-delete')
         self.erase_button.set_tooltip(_('Erase selected thought(s)'))
@@ -161,10 +161,10 @@ class EditToolbar(activity.EditToolbar):
         self.insert(self.erase_button, -1)
 
         self.show_all()
-        self.clipboard = gtk.Clipboard()
+        self.clipboard = Gtk.Clipboard()
 
-        self.copy.child.set_sensitive(False)
-        self.paste.child.set_sensitive(False)
+        self.copy.get_child().set_sensitive(False)
+        self.paste.get_child().set_sensitive(False)
         self.erase_button.set_sensitive(False)
 
     def __undo_cb(self, button):
@@ -195,9 +195,9 @@ class EditToolbar(activity.EditToolbar):
         self._parent._main_area.move_mode = False
 
 
-class ViewToolbar(gtk.Toolbar):
+class ViewToolbar(Gtk.Toolbar):
     def __init__(self, main_area):
-        gtk.Toolbar.__init__(self)
+        GObject.GObject.__init__(self)
 
         self._main_area = main_area
 
@@ -252,10 +252,10 @@ class ViewToolbar(gtk.Toolbar):
         self._main_area.translation[1] = 0
         hadj = self._main_area.sw.get_hadjustment()
         hadj.set_lower(0)
-        hadj.set_upper(max(gtk.gdk.screen_width(), gtk.gdk.screen_height()))
+        hadj.set_upper(max(Gdk.Screen.width(), Gdk.Screen.height()))
         vadj = self._main_area.sw.get_vadjustment()
         vadj.set_lower(0)
-        vadj.set_upper(max(gtk.gdk.screen_width(), gtk.gdk.screen_height()))
+        vadj.set_upper(max(Gdk.Screen.width(), Gdk.Screen.height()))
         self._main_area.invalidate()
 
     def __zoom_tofit_cb(self, button):
@@ -266,12 +266,12 @@ class ViewToolbar(gtk.Toolbar):
         self._main_area.scale_fac = bounds['scale']
         hadj = self._main_area.sw.get_hadjustment()
         hadj.set_lower(0)
-        hadj.set_upper(max(gtk.gdk.screen_width(),
-                           gtk.gdk.screen_height()) * bounds['scale'])
+        hadj.set_upper(max(Gdk.Screen.width(),
+                           Gdk.Screen.height()) * bounds['scale'])
         vadj = self._main_area.sw.get_vadjustment()
         vadj.set_lower(0)
-        vadj.set_upper(max(gtk.gdk.screen_width(),
-                           gtk.gdk.screen_height()) * bounds['scale'])
+        vadj.set_upper(max(Gdk.Screen.width(),
+                           Gdk.Screen.height()) * bounds['scale'])
         self._main_area.invalidate()
 
     def __get_thought_bounds(self):
@@ -298,8 +298,8 @@ class ViewToolbar(gtk.Toolbar):
         screen_width = self._main_area.window.get_geometry()[2]
         screen_height = self._main_area.window.get_geometry()[3]
         '''
-        screen_width = gtk.gdk.screen_width()
-        screen_height = gtk.gdk.screen_height() - style.GRID_CELL_SIZE
+        screen_width = Gdk.Screen.width()
+        screen_height = Gdk.Screen.height() - style.GRID_CELL_SIZE
         overlap = (width - screen_width, height - screen_height)
         width_scale = float(screen_width) / (width * 1.1)
         height_scale = float(screen_height) / (height * 1.1)
@@ -309,9 +309,9 @@ class ViewToolbar(gtk.Toolbar):
                 'scale': min(width_scale, height_scale)}
 
 
-class TextAttributesToolbar(gtk.Toolbar):
+class TextAttributesToolbar(Gtk.Toolbar):
     def __init__(self, main_area):
-        gtk.Toolbar.__init__(self)
+        GObject.GObject.__init__(self)
 
         self._main_area = main_area
         self._font_list = ['ABC123', 'Sans', 'Serif', 'Monospace', 'Symbol']
@@ -324,7 +324,7 @@ class TextAttributesToolbar(gtk.Toolbar):
         self.insert(self.font_button, -1)
         self._setup_font_palette()
 
-        self.insert(gtk.SeparatorToolItem(), -1)
+        self.insert(Gtk.SeparatorToolItem(), -1)
 
         self.font_size_up = ToolButton('resize+')
         self.font_size_up.set_tooltip(_('Bigger'))
@@ -335,9 +335,9 @@ class TextAttributesToolbar(gtk.Toolbar):
             font_size = self._main_area.font_size
         else:
             font_size = utils.default_font_size
-        self.size_label = gtk.Label(str(font_size))
+        self.size_label = Gtk.Label(label=str(font_size))
         self.size_label.show()
-        toolitem = gtk.ToolItem()
+        toolitem = Gtk.ToolItem()
         toolitem.add(self.size_label)
         toolitem.show()
         self.insert(toolitem, -1)
@@ -347,7 +347,7 @@ class TextAttributesToolbar(gtk.Toolbar):
         self.font_size_down.connect('clicked', self.__font_sizes_cb, False)
         self.insert(self.font_size_down, -1)
 
-        self.insert(gtk.SeparatorToolItem(), -1)
+        self.insert(Gtk.SeparatorToolItem(), -1)
 
         self.bold = ToolButton('bold-text')
         self.bold.set_tooltip(_('Bold'))
@@ -372,7 +372,7 @@ class TextAttributesToolbar(gtk.Toolbar):
         bakground_color = ColorToolButton()
         bakground_color.set_title(_('Set background color'))
         bakground_color.connect('color-set', self.__background_color_cb)
-        bakground_color.set_color(gtk.gdk.Color(65535, 65535, 65535))
+        bakground_color.set_color(Gdk.Color(65535, 65535, 65535))
         self.insert(bakground_color, -1)
 
         self.show_all()
@@ -403,13 +403,13 @@ class TextAttributesToolbar(gtk.Toolbar):
             for line in fonts_file:
                 self._font_white_list.append(line.strip())
             # monitor changes in the file
-            gio_fonts_file = gio.File(USER_FONTS_FILE_PATH)
+            gio_fonts_file = Gio.File(USER_FONTS_FILE_PATH)
             self.monitor = gio_fonts_file.monitor_file()
             self.monitor.set_rate_limit(5000)
             self.monitor.connect('changed', self._reload_fonts)
 
     def _reload_fonts(self, monitor, gio_file, other_file, event):
-        if event != gio.FILE_MONITOR_EVENT_CHANGES_DONE_HINT:
+        if event != Gio.FileMonitorEvent.CHANGES_DONE_HINT:
             return
         self._font_white_list = []
         self._font_white_list.extend(DEFAULT_FONTS)
@@ -439,7 +439,7 @@ class TextAttributesToolbar(gtk.Toolbar):
         self._init_font_list()
         context = self._main_area.pango_context
         for family in context.list_families():
-            name = pango.FontDescription(family.get_name()).to_string()
+            name = Pango.FontDescription(family.get_name()).to_string()
             if name not in self._font_list and \
                     name in self._font_white_list:
                 self._font_list.append(name)
@@ -499,16 +499,16 @@ class TextAttributesToolbar(gtk.Toolbar):
             if found:
                 attr = it.get_attrs()
                 for x in attr:
-                    if x.type == pango.ATTR_WEIGHT and \
-                       x.value == pango.WEIGHT_BOLD:
+                    if x.type == Pango.ATTR_WEIGHT and \
+                       x.value == Pango.Weight.BOLD:
                         attributes["bold"] = False
-                    elif x.type == pango.ATTR_STYLE and \
-                         x.value == pango.STYLE_ITALIC:
+                    elif x.type == Pango.ATTR_STYLE and \
+                         x.value == Pango.Style.ITALIC:
                         attributes["italics"] = False
-                    elif x.type == pango.ATTR_UNDERLINE and \
-                         x.value == pango.UNDERLINE_SINGLE:
+                    elif x.type == Pango.ATTR_UNDERLINE and \
+                         x.value == Pango.Underline.SINGLE:
                         attributes["underline"] = False
-                    elif x.type == pango.ATTR_FONT_DESC:
+                    elif x.type == Pango.ATTR_FONT_DESC:
                         attributes["font"] = x.desc
             if it.next() == False:
                 break
@@ -569,10 +569,10 @@ class TextAttributesToolbar(gtk.Toolbar):
         return
 
 
-class ThoughtsToolbar(gtk.Toolbar):
+class ThoughtsToolbar(Gtk.Toolbar):
 
     def __init__(self, parent):
-        gtk.Toolbar.__init__(self)
+        GObject.GObject.__init__(self)
         self._parent = parent
 
         text_mode_btn = RadioToolButton(named_icon='text-mode')
@@ -653,7 +653,7 @@ class ActionButtons():
         target_toolbar.insert(self.drag_button, -1)
 
         if HASTOOLBARBOX:
-            self._separator_2 = gtk.SeparatorToolItem()
+            self._separator_2 = Gtk.SeparatorToolItem()
             self._separator_2.props.draw = False
             #self._separator_2.set_size_request(0, -1)
             self._separator_2.set_expand(True)
@@ -699,7 +699,7 @@ class ActionButtons():
             return
 
         if hasattr(self, '_separator_2'):
-            if gtk.gdk.screen_width() / 13 > style.GRID_CELL_SIZE:
+            if Gdk.Screen.width() / 13 > style.GRID_CELL_SIZE:
                 if self._separator_2.get_parent() is None:
                     self._main_toolbar.remove(self._stop_button)
                     self._main_toolbar.insert(self._separator_2, -1)
@@ -719,7 +719,7 @@ class LabyrinthActivity(activity.Activity):
             activity_button = ActivityToolbarButton(self)
             toolbar_box.toolbar.insert(activity_button, 0)
 
-            separator = gtk.SeparatorToolItem()
+            separator = Gtk.SeparatorToolItem()
             separator.props.draw = True
             activity_button.props.page.insert(separator, -1)
             separator.show()
@@ -744,8 +744,8 @@ class LabyrinthActivity(activity.Activity):
             toolbar_box.toolbar.insert(tool, -1)
 
             self._undo = UndoManager.UndoManager(self,
-                                                 self.edit_toolbar.undo.child,
-                                                 self.edit_toolbar.redo.child)
+                                                 self.edit_toolbar.undo.get_child(),
+                                                 self.edit_toolbar.redo.get_child())
 
             self.__build_main_canvas_area()
 
@@ -793,13 +793,13 @@ class LabyrinthActivity(activity.Activity):
 
             self.edit_toolbar = EditToolbar(self)
             toolbox.add_toolbar(_('Edit'), self.edit_toolbar)
-            separator = gtk.SeparatorToolItem()
+            separator = Gtk.SeparatorToolItem()
             self.edit_toolbar.insert(separator, 0)
             self.edit_toolbar.show()
 
             self._undo = UndoManager.UndoManager(self,
-                                                 self.edit_toolbar.undo.child,
-                                                 self.edit_toolbar.redo.child)
+                                                 self.edit_toolbar.undo.get_child(),
+                                                 self.edit_toolbar.redo.get_child())
 
             self.__build_main_canvas_area()
 
@@ -819,22 +819,22 @@ class LabyrinthActivity(activity.Activity):
         self.set_focus_child(self._main_area)
 
     def __build_main_canvas_area(self):
-        self.fixed = gtk.Fixed()
+        self.fixed = Gtk.Fixed()
         self.fixed.show()
         self.set_canvas(self.fixed)
 
-        self._vbox = gtk.VBox()
+        self._vbox = Gtk.VBox()
         self._vbox.set_size_request(
-            gtk.gdk.screen_width(),
-            gtk.gdk.screen_height() - style.GRID_CELL_SIZE)
+            Gdk.Screen.width(),
+            Gdk.Screen.height() - style.GRID_CELL_SIZE)
 
         self._main_area = MMapArea.MMapArea(self._undo)
 
         self._undo.block()
 
         self._main_area.set_size_request(
-            max(gtk.gdk.screen_width(), gtk.gdk.screen_height()),
-            max(gtk.gdk.screen_width(), gtk.gdk.screen_height()))
+            max(Gdk.Screen.width(), Gdk.Screen.height()),
+            max(Gdk.Screen.width(), Gdk.Screen.height()))
         self._main_area.show()
         self._main_area.connect("set_focus", self.__main_area_focus_cb)
         self._main_area.connect("button-press-event",
@@ -844,11 +844,11 @@ class LabyrinthActivity(activity.Activity):
                                 self.__text_selection_cb)
         self._main_area.connect("thought_selection_changed",
                                 self.__thought_selected_cb)
-        gtk.gdk.screen_get_default().connect('size-changed',
+        Gdk.Screen.get_default().connect('size-changed',
                                              self.__configure_cb)
 
-        self._sw = gtk.ScrolledWindow()
-        self._sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        self._sw = Gtk.ScrolledWindow()
+        self._sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         self._sw.add_with_viewport(self._main_area)
         self._vbox.pack_end(self._sw, True, True)
         self._sw.show()
@@ -879,8 +879,8 @@ class LabyrinthActivity(activity.Activity):
     def __configure_cb(self, event):
         ''' Screen size has changed '''
         self._vbox.set_size_request(
-            gtk.gdk.screen_width(),
-            gtk.gdk.screen_height() - style.GRID_CELL_SIZE)
+            Gdk.Screen.width(),
+            Gdk.Screen.height() - style.GRID_CELL_SIZE)
 
         self._vbox.show()
 
@@ -917,10 +917,10 @@ class LabyrinthActivity(activity.Activity):
         self.edit_toolbar.erase_button.set_sensitive(state)
 
     def __change_copy_state(self, state):
-        self.edit_toolbar.copy.child.set_sensitive(state)
+        self.edit_toolbar.copy.get_child().set_sensitive(state)
 
     def __change_paste_state(self, state):
-        self.edit_toolbar.paste.child.set_sensitive(state)
+        self.edit_toolbar.paste.get_child().set_sensitive(state)
 
     def __expose(self, widget, event):
         """Create canvas hint message at start
@@ -931,7 +931,7 @@ class LabyrinthActivity(activity.Activity):
 
         context = self._main_area.window.cairo_create()
         pango_context = self._main_area.pango_context
-        layout = pango.Layout(pango_context)
+        layout = Pango.Layout(pango_context)
         context.set_source_rgb(0.6, 0.6, 0.6)
         context.set_line_width(4.0)
         context.set_dash([10.0, 5.0], 0.0)
@@ -946,7 +946,7 @@ class LabyrinthActivity(activity.Activity):
             xf = 4
             yf = 2
 
-        layout.set_alignment(pango.ALIGN_CENTER)
+        layout.set_alignment(Pango.Alignment.CENTER)
         layout.set_text(_('Click to add\ncentral thought'))
         width, height = layout.get_pixel_size()
         context.move_to(geom[2] / xf - (width / 2), geom[3] / yf - (height / 2))
@@ -1034,15 +1034,15 @@ class LabyrinthActivity(activity.Activity):
         fileObject.file_path = os.path.join(self.get_activity_root(),
                                             'instance', '%i' % time.time())
         filename = fileObject.file_path
-        pixmap = gtk.gdk.Pixmap(None, true_width, true_height, bitdepth)
+        pixmap = Gdk.Pixmap(None, true_width, true_height, bitdepth)
         pixmap.set_colormap(cmap)
         self._main_area.export(pixmap.cairo_create(), true_width, true_height,
                                False)
 
-        pb = gtk.gdk.Pixbuf.get_from_drawable(
-            gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, True, 8, true_width,
+        pb = GdkPixbuf.Pixbuf.get_from_drawable(
+            GdkPixbuf.Pixbuf(GdkPixbuf.Colorspace.RGB, True, 8, true_width,
                            true_height),
-            pixmap, gtk.gdk.colormap_get_system(), 0, 0, 0, 0, true_width,
+            pixmap, Gdk.colormap_get_system(), 0, 0, 0, 0, true_width,
             true_height)
 
         pb.save(filename, 'png')

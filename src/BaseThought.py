@@ -19,10 +19,10 @@
 # Boston, MA  02110-1301  USA
 #
 
-import gobject
-import gtk
+from gi.repository import GObject
+from gi.repository import Gtk
 import utils
-import pango
+from gi.repository import Pango
 
 import TextBufferMarkup
 import UndoManager
@@ -36,7 +36,7 @@ MIN_SIZE = 20
 DEFAULT_WIDTH	= 100
 DEFAULT_HEIGHT	= 70
 
-class BaseThought (gobject.GObject):
+class BaseThought (GObject.GObject):
 	''' The basic class to derive other thoughts from. \
 		Instructions for creating derivative thought types are  \
 		given as comments'''
@@ -44,33 +44,33 @@ class BaseThought (gobject.GObject):
 	# emit.  If you emit other signals, the chances are they'll be ignored
 	# by the MMapArea.  It's you're responsiblity to catch and handle them.
 	# All these signals are handled correctly by the MMapArea.
-	__gsignals__ = dict (select_thought      = (gobject.SIGNAL_RUN_FIRST,
-											    gobject.TYPE_NONE,
-											    (gobject.TYPE_PYOBJECT,)),
-						 update_view		 = (gobject.SIGNAL_RUN_LAST,
-						 						gobject.TYPE_NONE,
+	__gsignals__ = dict (select_thought      = (GObject.SignalFlags.RUN_FIRST,
+											    None,
+											    (GObject.TYPE_PYOBJECT,)),
+						 update_view		 = (GObject.SignalFlags.RUN_LAST,
+						 						None,
 						 						()),
-						 create_link		 = (gobject.SIGNAL_RUN_FIRST,
-						 						gobject.TYPE_NONE,
-						 						(gobject.TYPE_PYOBJECT,)),
-						 title_changed       = (gobject.SIGNAL_RUN_LAST,
-						 						gobject.TYPE_NONE,
-						 						(gobject.TYPE_STRING,)),
-						 text_selection_changed = (gobject.SIGNAL_RUN_LAST,
-						 						   gobject.TYPE_NONE,
-						 						   (gobject.TYPE_INT, gobject.TYPE_INT, gobject.TYPE_STRING)),
-						 change_mouse_cursor    = (gobject.SIGNAL_RUN_FIRST,
-						 						   gobject.TYPE_NONE,
-						 						   (gobject.TYPE_INT,)),
-						 update_links			= (gobject.SIGNAL_RUN_LAST,
-						 						   gobject.TYPE_NONE,
+						 create_link		 = (GObject.SignalFlags.RUN_FIRST,
+						 						None,
+						 						(GObject.TYPE_PYOBJECT,)),
+						 title_changed       = (GObject.SignalFlags.RUN_LAST,
+						 						None,
+						 						(GObject.TYPE_STRING,)),
+						 text_selection_changed = (GObject.SignalFlags.RUN_LAST,
+						 						   None,
+						 						   (GObject.TYPE_INT, GObject.TYPE_INT, GObject.TYPE_STRING)),
+						 change_mouse_cursor    = (GObject.SignalFlags.RUN_FIRST,
+						 						   None,
+						 						   (GObject.TYPE_INT,)),
+						 update_links			= (GObject.SignalFlags.RUN_LAST,
+						 						   None,
 						 						   ()),
-						 grab_focus				= (gobject.SIGNAL_RUN_FIRST,
-						 						   gobject.TYPE_NONE,
-						 						   (gobject.TYPE_BOOLEAN,)),
-						 update_attrs			= (gobject.SIGNAL_RUN_FIRST,
-						 						   gobject.TYPE_NONE,
-						 						   (gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN, pango.FontDescription)))
+						 grab_focus				= (GObject.SignalFlags.RUN_FIRST,
+						 						   None,
+						 						   (GObject.TYPE_BOOLEAN,)),
+						 update_attrs			= (GObject.SignalFlags.RUN_FIRST,
+						 						   None,
+						 						   (GObject.TYPE_BOOLEAN, GObject.TYPE_BOOLEAN, GObject.TYPE_BOOLEAN, Pango.FontDescription)))
 
 	# The first thing that should be called is this constructor
 	# It sets some basic properties of all thoughts and should be called
@@ -248,14 +248,14 @@ RESIZE_BOTTOM 	= 8
 
 CURSOR = {}
 
-CURSOR[RESIZE_LEFT] 				= gtk.gdk.LEFT_SIDE;
-CURSOR[RESIZE_RIGHT]				= gtk.gdk.RIGHT_SIDE;
-CURSOR[RESIZE_TOP]					= gtk.gdk.TOP_SIDE;
-CURSOR[RESIZE_BOTTOM]				= gtk.gdk.BOTTOM_SIDE;
-CURSOR[RESIZE_LEFT|RESIZE_TOP]		= gtk.gdk.TOP_LEFT_CORNER;
-CURSOR[RESIZE_LEFT|RESIZE_BOTTOM]	= gtk.gdk.BOTTOM_LEFT_CORNER;
-CURSOR[RESIZE_RIGHT|RESIZE_TOP]		= gtk.gdk.TOP_RIGHT_CORNER;
-CURSOR[RESIZE_RIGHT|RESIZE_BOTTOM]	= gtk.gdk.BOTTOM_RIGHT_CORNER;
+CURSOR[RESIZE_LEFT] 				= Gdk.LEFT_SIDE;
+CURSOR[RESIZE_RIGHT]				= Gdk.RIGHT_SIDE;
+CURSOR[RESIZE_TOP]					= Gdk.TOP_SIDE;
+CURSOR[RESIZE_BOTTOM]				= Gdk.BOTTOM_SIDE;
+CURSOR[RESIZE_LEFT|RESIZE_TOP]		= Gdk.TOP_LEFT_CORNER;
+CURSOR[RESIZE_LEFT|RESIZE_BOTTOM]	= Gdk.BOTTOM_LEFT_CORNER;
+CURSOR[RESIZE_RIGHT|RESIZE_TOP]		= Gdk.TOP_RIGHT_CORNER;
+CURSOR[RESIZE_RIGHT|RESIZE_BOTTOM]	= Gdk.BOTTOM_RIGHT_CORNER;
 
 class ResizableThought (BaseThought):
 	''' A resizable thought base class.  This allows the sides and corners \
@@ -295,7 +295,7 @@ class ResizableThought (BaseThought):
 		self.emit ("update_view")
 
 	def inside (self, inside):
-		self.emit ("change_mouse_cursor", gtk.gdk.LEFT_PTR)
+		self.emit ("change_mouse_cursor", Gdk.CursorType.LEFT_PTR)
 
 	def includes (self, coords):
 		if not self.ul or not self.lr or not coords:
@@ -416,7 +416,7 @@ class ResizableThought (BaseThought):
 
 	def leave (self):
 		self.editing = False
-		self.emit('change_mouse_cursor', gtk.gdk.LEFT_PTR)
+		self.emit('change_mouse_cursor', Gdk.CursorType.LEFT_PTR)
 
 	def undo_resize (self, action, mode):
 		self.undo.block ()
@@ -427,7 +427,7 @@ class ResizableThought (BaseThought):
 		self.ul = action.args[choose][0]
 		self.width = action.args[choose][1]
 		self.height = action.args[choose][2]
-		self.pic = self.orig_pic.scale_simple (int(self.width), int(self.height), gtk.gdk.INTERP_HYPER)
+		self.pic = self.orig_pic.scale_simple (int(self.width), int(self.height), GdkPixbuf.InterpType.HYPER)
 		self.recalc_edges ()
 		self.emit ("update_links")
 		self.emit ("update_view")

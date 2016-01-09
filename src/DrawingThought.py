@@ -19,7 +19,7 @@
 # Boston, MA  02110-1301  USA
 #
 
-import gtk
+from gi.repository import Gtk
 import xml.dom.minidom as dom
 import xml.dom
 import gettext
@@ -40,11 +40,11 @@ SMOOTH = 5
 
 class DrawingThought (ResizableThought):
 	class DrawingPoint (object):
-		def __init__ (self, coords, style=STYLE_CONTINUE, color = gtk.gdk.Color(0,0,0), width = 2):
+		def __init__ (self, coords, style=STYLE_CONTINUE, color = Gdk.Color(0,0,0), width = 2):
 			self.x, self.y = coords
 			self.style = style
 			if color == None:
-				color = gtk.gdk.Color(0,0,0)
+				color = Gdk.Color(0,0,0)
 			self.color = color
 			self.width = 1
 		def move_by (self, x, y):
@@ -114,7 +114,7 @@ class DrawingThought (ResizableThought):
 		if event.button == 1:
 			self.button_down = True
 			self.drawing = 2
-			if not event.state & gtk.gdk.SHIFT_MASK:
+			if not event.get_state() & Gdk.ModifierType.SHIFT_MASK:
 				self.drawing = 1
 			self.orig_size = (self.ul, self.width, self.height)
 			self.ins_points = []
@@ -391,9 +391,9 @@ class DrawingThought (ResizableThought):
 		self.identity = int (node.getAttribute ("identity"))
 		try:
 			tmp = node.getAttribute ("background-color")
-			self.background_color = gtk.gdk.color_parse(tmp)
+			self.background_color = Gdk.color_parse(tmp)
 			tmp = node.getAttribute ("foreground-color")
-			self.foreground_color = gtk.gdk.color_parse(tmp)
+			self.foreground_color = Gdk.color_parse(tmp)
 		except ValueError:
 			pass
 
@@ -425,7 +425,7 @@ class DrawingThought (ResizableThought):
 				col = None
 				try:
 					tmp = n.getAttribute ("color")
-					col = gtk.gdk.color_parse (tmp)
+					col = Gdk.color_parse (tmp)
 				except ValueError:
 					pass
 				self.points.append (self.DrawingPoint (c, style, col))
@@ -452,7 +452,7 @@ class DrawingThought (ResizableThought):
 
 	def inside(self, inside):
 		if self.editing:
-			self.emit ("change_mouse_cursor", gtk.gdk.PENCIL)
+			self.emit ("change_mouse_cursor", Gdk.PENCIL)
 		else:
 			ResizableThought.inside(self, inside)
 

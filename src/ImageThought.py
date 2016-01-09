@@ -19,7 +19,7 @@
 # Boston, MA  02110-1301  USA
 #
 
-import gtk
+from gi.repository import Gtk
 import xml.dom.minidom as dom
 import xml.dom
 import gettext
@@ -30,14 +30,14 @@ import logging
 import tempfile
 import cStringIO
 
-from sugar import mime
+from sugar3 import mime
 
 from BaseThought import *
 import utils
 import UndoManager
 
-from sugar.activity.activity import get_activity_root
-from sugar.graphics.objectchooser import ObjectChooser
+from sugar3.activity.activity import get_activity_root
+from sugar3.graphics.objectchooser import ObjectChooser
 
 class ImageThought (ResizableThought):
 	def __init__ (self, coords, pango_context, thought_number, save, undo, loading, background_color, foreground_color):
@@ -63,7 +63,7 @@ class ImageThought (ResizableThought):
 
 		try:
 			result = chooser.run()
-			if result == gtk.RESPONSE_ACCEPT and chooser.get_selected_object():
+			if result == Gtk.ResponseType.ACCEPT and chooser.get_selected_object():
 				jobject = chooser.get_selected_object()
 			else:
 				return False
@@ -71,7 +71,7 @@ class ImageThought (ResizableThought):
 			if jobject and jobject.file_path:
 				logging.debug("journal_open_image: fname=%s" % jobject.file_path)
 				try:
-					self.orig_pic = gtk.gdk.pixbuf_new_from_file (jobject.file_path)
+					self.orig_pic = GdkPixbuf.Pixbuf.new_from_file (jobject.file_path)
 					self.filename = os.path.join('images', os.path.basename(jobject.file_path))
 				except Exception, e:
 					logging.error("journal_open_image: %s" % e)
@@ -112,7 +112,7 @@ class ImageThought (ResizableThought):
 			context.fill ()
 		context.set_source_rgb (0,0,0)
 
-	def recalc_edges (self, force=False, scale=gtk.gdk.INTERP_HYPER):
+	def recalc_edges (self, force=False, scale=GdkPixbuf.InterpType.HYPER):
 		self.lr = (self.ul[0]+self.width, self.ul[1]+self.height)
 
 		margin = utils.margin_required (utils.STYLE_NORMAL)
@@ -157,7 +157,7 @@ class ImageThought (ResizableThought):
 		if self.object_chooser_active:
 			return False
 		if ResizableThought.handle_motion(self, event, coords):
-			self.recalc_edges(False, gtk.gdk.INTERP_NEAREST)
+			self.recalc_edges(False, GdkPixbuf.InterpType.NEAREST)
 			return True
 
 		return False
@@ -207,7 +207,7 @@ class ImageThought (ResizableThought):
 		self.identity = int (node.getAttribute ("identity"))
 		try:
 			tmp = node.getAttribute ("background-color")
-			self.background_color = gtk.gdk.color_parse(tmp)
+			self.background_color = Gdk.color_parse(tmp)
 		except ValueError:
 			pass
 		self.width = float(node.getAttribute ("image_width"))

@@ -21,14 +21,14 @@
 # Boston, MA  02110-1301  USA
 #
 
-import pygtk
+import gi
 import gettext, locale
 import optparse
 import sys, os
 import os.path as osp
 
 if os.name != 'nt':
-	pygtk.require('2.0')
+	gi.require_version('Gtk', '3.0')
 	def _check (path):
 		return osp.exists(path) and osp.isdir(path) and osp.isfile(path+"/AUTHORS")
 
@@ -38,7 +38,7 @@ if os.name != 'nt':
 	else:
 		sys.path.insert(0, osp.abspath("@PYTHONDIR@"))
 
-import gtk
+from gi.repository import Gtk
 
 # Hopefully this will work now ;)
 import utils
@@ -62,8 +62,8 @@ if not os.name == 'nt':
 		locale.bind_textdomain_codeset('labyrinth','UTF-8')
 	locale.textdomain('labyrinth')
 
-gtk.glade.bindtextdomain('labyrinth')
-gtk.glade.textdomain('labyrinth')
+Gtk.glade.bindtextdomain('labyrinth')
+Gtk.glade.textdomain('labyrinth')
 
 def main():
 	parser = optparse.OptionParser()
@@ -91,7 +91,7 @@ def main():
 		MapBrowser.open_map_filename (options.filepath)
 
 	try:
-		gtk.main()
+		Gtk.main()
 	except:
 		print "Exception caught while running.  Dying a death."
 		sys.exit(1)

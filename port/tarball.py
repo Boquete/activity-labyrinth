@@ -18,7 +18,7 @@ import os
 import time
 import tarfile
 import cStringIO
-import gtk
+from gi.repository import Gtk
 import zipfile
 import tempfile
 import shutil
@@ -41,7 +41,7 @@ class Tarball:
     Supprted types:
 
         * string
-        * gtk.gdk.Pixbuf
+        * GdkPixbuf.Pixbuf
 
     Write usage:
 
@@ -122,7 +122,7 @@ class Tarball:
 
     def read_pixbuf(self, arcname):
         """Returns pixbuf object of given file from tarball."""
-        loader = gtk.gdk.pixbuf_loader_new_with_mime_type('image/png')
+        loader = GdkPixbuf.Pixbuf.loader_new_with_mime_type('image/png')
         loader.write(self.read(arcname))
         loader.close()
         return loader.get_pixbuf()
@@ -138,7 +138,7 @@ class Tarball:
 
         if isinstance(data, str):
             self.__write_str(info, data)
-        elif isinstance(data, gtk.gdk.Pixbuf):
+        elif isinstance(data, GdkPixbuf.Pixbuf):
             self.__write_pixbuf(info, data)
         else:
             raise BadDataTypeError()

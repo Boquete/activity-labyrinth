@@ -23,9 +23,9 @@
 import math
 import time
 import string
-import gtk
-import pango
-import gobject
+from gi.repository import Gtk
+from gi.repository import Pango
+from gi.repository import GObject
 import gettext
 import copy
 import cairo
@@ -80,36 +80,36 @@ UNDO_ALIGN = 8
 # necessary features within all the thought types.  If you do, please send a patch ;)
 # OR: Change this class to MMapAreaNew and MMapAreaOld to MMapArea
 
-class MMapArea (gtk.DrawingArea):
+class MMapArea (Gtk.DrawingArea):
 	'''A MindMapArea Widget.  A blank canvas with a collection of child thoughts.\
 	   It is responsible for processing signals and such from the whole area and \
 	   passing these on to the correct child.  It also informs things when to draw'''
 
 	__gsignals__ = dict (
-        title_changed = (gobject.SIGNAL_RUN_FIRST,
-                         gobject.TYPE_NONE, (gobject.TYPE_STRING, )),
-        change_mode = (gobject.SIGNAL_RUN_LAST,
-                       gobject.TYPE_NONE,
-                       (gobject.TYPE_INT, )),
-        change_buffer = (gobject.SIGNAL_RUN_LAST,
-                         gobject.TYPE_NONE,
-                         (gobject.TYPE_OBJECT, )),
-        text_selection_changed = (gobject.SIGNAL_RUN_FIRST,
-                                  gobject.TYPE_NONE,
-                                  (gobject.TYPE_INT, gobject.TYPE_INT,
-                                   gobject.TYPE_STRING)),
-        thought_selection_changed = (gobject.SIGNAL_RUN_FIRST,
-                                     gobject.TYPE_NONE,
-                                     (gobject.TYPE_PYOBJECT,
-                                      gobject.TYPE_PYOBJECT)),
-        set_focus = (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE,
-				     (gobject.TYPE_PYOBJECT, gobject.TYPE_BOOLEAN)),
-        set_attrs = (gobject.SIGNAL_RUN_LAST,
-                     gobject.TYPE_NONE,
-                     (gobject.TYPE_BOOLEAN, gobject.TYPE_BOOLEAN,
-                      gobject.TYPE_BOOLEAN, pango.FontDescription)),
-        link_selected = (gobject.SIGNAL_RUN_FIRST,
-						 gobject.TYPE_NONE,
+        title_changed = (GObject.SignalFlags.RUN_FIRST,
+                         None, (GObject.TYPE_STRING, )),
+        change_mode = (GObject.SignalFlags.RUN_LAST,
+                       None,
+                       (GObject.TYPE_INT, )),
+        change_buffer = (GObject.SignalFlags.RUN_LAST,
+                         None,
+                         (GObject.TYPE_OBJECT, )),
+        text_selection_changed = (GObject.SignalFlags.RUN_FIRST,
+                                  None,
+                                  (GObject.TYPE_INT, GObject.TYPE_INT,
+                                   GObject.TYPE_STRING)),
+        thought_selection_changed = (GObject.SignalFlags.RUN_FIRST,
+                                     None,
+                                     (GObject.TYPE_PYOBJECT,
+                                      GObject.TYPE_PYOBJECT)),
+        set_focus = (GObject.SignalFlags.RUN_FIRST, None,
+				     (GObject.TYPE_PYOBJECT, GObject.TYPE_BOOLEAN)),
+        set_attrs = (GObject.SignalFlags.RUN_LAST,
+                     None,
+                     (GObject.TYPE_BOOLEAN, GObject.TYPE_BOOLEAN,
+                      GObject.TYPE_BOOLEAN, Pango.FontDescription)),
+        link_selected = (GObject.SignalFlags.RUN_FIRST,
+						 None,
 						 ()))
 
 	def __init__(self, undo):
@@ -135,7 +135,7 @@ class MMapArea (gtk.DrawingArea):
 		impl = dom.getDOMImplementation()
 		self.save = impl.createDocument("http://www.donscorgie.blueyonder.co.uk/labns", "MMap", None)
 		self.element = self.save.documentElement
-		self.im_context = gtk.IMMulticontext ()
+		self.im_context = Gtk.IMMulticontext ()
 
 		self.mode = MODE_NULL
 		self.old_mode = MODE_NULL
@@ -166,18 +166,18 @@ class MMapArea (gtk.DrawingArea):
 		self.rotation = 0
 		self.text_attributes = {}
 
-		self.set_events (gtk.gdk.KEY_PRESS_MASK |
-						 gtk.gdk.KEY_RELEASE_MASK |
-						 gtk.gdk.BUTTON_PRESS_MASK |
-						 gtk.gdk.BUTTON_RELEASE_MASK |
-						 gtk.gdk.POINTER_MOTION_MASK |
-						 gtk.gdk.SCROLL_MASK
+		self.set_events (Gdk.EventMask.KEY_PRESS_MASK |
+						 Gdk.EventMask.KEY_RELEASE_MASK |
+						 Gdk.EventMask.BUTTON_PRESS_MASK |
+						 Gdk.EventMask.BUTTON_RELEASE_MASK |
+						 Gdk.EventMask.POINTER_MOTION_MASK |
+						 Gdk.EventMask.SCROLL_MASK
 						)
 
-		self.set_flags (gtk.CAN_FOCUS)
+		self.set_flags (Gtk.CAN_FOCUS)
 		
 		# set theme colors
-		w = gtk.Window()
+		w = Gtk.Window()
 		w.realize()
 		style = w.get_style()
 		self.pango_context.set_font_description(style.font_desc)
@@ -192,18 +192,18 @@ class MMapArea (gtk.DrawingArea):
 
 		utils.default_font = self.font_name
 		self.font_size = utils.default_font_size
-		utils.default_colors["text"] = utils.gtk_to_cairo_color(style.text[gtk.STATE_NORMAL])
-		utils.default_colors["base"] = utils.gtk_to_cairo_color(style.base[gtk.STATE_NORMAL])
+		utils.default_colors["text"] = utils.gtk_to_cairo_color(style.text[Gtk.StateType.NORMAL])
+		utils.default_colors["base"] = utils.gtk_to_cairo_color(style.base[Gtk.StateType.NORMAL])
 		# Match the fixed white canvas colour (makes thought focus visible)
 		self.background_color = style.white
 		self.foreground_color = style.black
-		utils.default_colors["bg"] = utils.gtk_to_cairo_color(style.bg[gtk.STATE_NORMAL])
-		utils.default_colors["fg"] = utils.gtk_to_cairo_color(style.fg[gtk.STATE_NORMAL])
+		utils.default_colors["bg"] = utils.gtk_to_cairo_color(style.bg[Gtk.StateType.NORMAL])
+		utils.default_colors["fg"] = utils.gtk_to_cairo_color(style.fg[Gtk.StateType.NORMAL])
 		
-		utils.selected_colors["text"] = utils.gtk_to_cairo_color(style.text[gtk.STATE_SELECTED])
-		utils.selected_colors["bg"] = utils.gtk_to_cairo_color(style.bg[gtk.STATE_SELECTED])
-		utils.selected_colors["fg"] = utils.gtk_to_cairo_color(style.fg[gtk.STATE_SELECTED])
-		utils.selected_colors["fill"] = utils.gtk_to_cairo_color(style.base[gtk.STATE_SELECTED])
+		utils.selected_colors["text"] = utils.gtk_to_cairo_color(style.text[Gtk.StateType.SELECTED])
+		utils.selected_colors["bg"] = utils.gtk_to_cairo_color(style.bg[Gtk.StateType.SELECTED])
+		utils.selected_colors["fg"] = utils.gtk_to_cairo_color(style.fg[Gtk.StateType.SELECTED])
+		utils.selected_colors["fill"] = utils.gtk_to_cairo_color(style.base[Gtk.StateType.SELECTED])
 
 	def set_text_attributes(self, text_attributes):
 		return
@@ -222,7 +222,7 @@ class MMapArea (gtk.DrawingArea):
 
 	def button_down (self, widget, event):
 		if self.drag_mode:
-			self.set_cursor(gtk.gdk.HAND2)
+			self.set_cursor(Gdk.HAND2)
 			self.origin_x = event.x
 			self.origin_y = event.y
 			self._dragging = True
@@ -230,7 +230,7 @@ class MMapArea (gtk.DrawingArea):
 
 		if event.button == 2 or \
 		        event.button == 1 and self.translate == True:
-			self.set_cursor (gtk.gdk.FLEUR)
+			self.set_cursor (Gdk.FLEUR)
 			self.original_translation = self.translation
 			self.origin_x = event.x
 			self.origin_y = event.y
@@ -244,16 +244,16 @@ class MMapArea (gtk.DrawingArea):
 				if self.move_mode:
 					self.moving = True
 				else:
-					self.moving = not (event.state & gtk.gdk.CONTROL_MASK)
+					self.moving = not (event.get_state() & Gdk.ModifierType.CONTROL_MASK)
 				if self.moving:
-					self.set_cursor(gtk.gdk.FLEUR)
+					self.set_cursor(Gdk.FLEUR)
 					self.move_origin = (coords[0], coords[1])
 					self.move_origin_new = self.move_origin
 
 			if obj == self.focus:
 				self.focus.enter()
 			else:
-				self.set_focus(obj, event.state)
+				self.set_focus(obj, event.get_state())
 
 			obj.process_button_down(event, coords)
 
@@ -283,7 +283,7 @@ class MMapArea (gtk.DrawingArea):
 
 	def button_release (self, widget, event):
 		if self._dragging:
-			self.set_cursor(gtk.gdk.LEFT_PTR)
+			self.set_cursor(Gdk.CursorType.LEFT_PTR)
 			self._dragging = False
 
 		coords = self.transform_coords (event.get_coords()[0], event.get_coords()[1])
@@ -348,9 +348,9 @@ class MMapArea (gtk.DrawingArea):
 	def scroll (self, widget, event):	
 		scale = self.scale_fac
 
-		if event.direction == gtk.gdk.SCROLL_UP:
+		if event.direction == Gdk.ScrollDirection.UP:
 			self.scale_fac*=1.2
-		elif event.direction == gtk.gdk.SCROLL_DOWN:
+		elif event.direction == Gdk.ScrollDirection.DOWN:
 			self.scale_fac/=1.2
 
 		self.undo.add_undo (UndoManager.UndoAction (self, UndoManager.TRANSFORM_CANVAS, \
@@ -405,7 +405,7 @@ class MMapArea (gtk.DrawingArea):
 			return True
 		coords = self.transform_coords (event.get_coords()[0], event.get_coords()[1])
 
-		if event.state & gtk.gdk.BUTTON1_MASK and self.is_bbox_selecting:
+		if event.get_state() & Gdk.ModifierType.BUTTON1_MASK and self.is_bbox_selecting:
 			self.bbox_current = coords
 			self.invalidate()
 			
@@ -430,14 +430,14 @@ class MMapArea (gtk.DrawingArea):
 			for t in self.thoughts:
 				if t.lr[0] > ul[0] and t.ul[1] < lr[1] and t.ul[0] < lr[0] and t.lr[1] > ul[1] :
 					if t not in self.selected:
-						self.select_thought(t, gtk.gdk.SHIFT_MASK)
+						self.select_thought(t, Gdk.ModifierType.SHIFT_MASK)
 				else:
 					if t in self.selected:
 						t.unselect()
 						self.selected.remove(t)
 			return True
 		elif self.moving:
-			self.set_cursor(gtk.gdk.FLEUR)
+			self.set_cursor(Gdk.FLEUR)
 			if not self.move_action:
 				self.move_action = UndoManager.UndoAction (self, UNDO_MOVE, self.undo_move, self.move_origin,
 														   self.selected)
@@ -446,8 +446,8 @@ class MMapArea (gtk.DrawingArea):
 			self.move_origin_new = (coords[0], coords[1])
 			self.invalidate ()
 			return True
-		elif event.state & gtk.gdk.BUTTON2_MASK or \
-                event.state & gtk.gdk.BUTTON1_MASK and self.translate:
+		elif event.get_state() & Gdk.ModifierType.BUTTON2_MASK or \
+                event.get_state() & Gdk.ModifierType.BUTTON1_MASK and self.translate:
 			self.translate = True
 			self.translation[0] -= (self.origin_x - event.x) / self.scale_fac
 			self.translation[1] -= (self.origin_y - event.y) / self.scale_fac
@@ -478,9 +478,9 @@ class MMapArea (gtk.DrawingArea):
 	def realize_cb (self, widget):
 		self.disconnect (self.realize_handle)
 		if self.mode == MODE_IMAGE or self.mode == MODE_DRAW:
-			self.set_cursor (gtk.gdk.CROSSHAIR)
+			self.set_cursor (Gdk.CursorType.CROSSHAIR)
 		else:
-			self.set_cursor (gtk.gdk.LEFT_PTR)
+			self.set_cursor (Gdk.CursorType.LEFT_PTR)
 		return False
 
 	def set_cursor(self, kind):
@@ -498,9 +498,9 @@ class MMapArea (gtk.DrawingArea):
 
 		if self.window:
 			if mode == MODE_IMAGE or mode == MODE_DRAW:
-				self.set_cursor (gtk.gdk.CROSSHAIR)
+				self.set_cursor (Gdk.CursorType.CROSSHAIR)
 			else:
-				self.set_cursor (gtk.gdk.LEFT_PTR)
+				self.set_cursor (Gdk.CursorType.LEFT_PTR)
 		else:
 			self.realize_handle = self.connect ("realize", self.realize_cb)
 		self.mode = mode
@@ -552,7 +552,7 @@ class MMapArea (gtk.DrawingArea):
 		self.selected = []
 
 	def select_link (self, link, modifiers):
-		if modifiers and modifiers & gtk.gdk.SHIFT_MASK and len (self.selected) > 1 and self.selected.count (link) > 0:
+		if modifiers and modifiers & Gdk.ModifierType.SHIFT_MASK and len (self.selected) > 1 and self.selected.count (link) > 0:
 			self.selected.remove (link)
 			link.unselect ()
 			return
@@ -560,7 +560,7 @@ class MMapArea (gtk.DrawingArea):
 		self.hookup_im_context()
 		self.set_focus(None, None)
 
-		if modifiers and (modifiers & gtk.gdk.SHIFT_MASK or modifiers == -1):
+		if modifiers and (modifiers & Gdk.ModifierType.SHIFT_MASK or modifiers == -1):
 			if self.selected.count (link) == 0:
 				self.selected.append (link)
 		else:
@@ -587,7 +587,7 @@ class MMapArea (gtk.DrawingArea):
 		if thought not in self.thoughts:
 			self.thoughts.append(thought)
 
-		if modifiers and (modifiers & gtk.gdk.SHIFT_MASK or modifiers == -1):
+		if modifiers and (modifiers & Gdk.ModifierType.SHIFT_MASK or modifiers == -1):
 			if self.selected.count (thought) == 0:
 				self.selected.append (thought)
 		else:
@@ -674,11 +674,11 @@ class MMapArea (gtk.DrawingArea):
 		rect = None
 		if not transformed_area:
 			alloc = self.get_allocation ()
-			rect = gtk.gdk.Rectangle (0, 0, alloc.width, alloc.height)
+			rect =  (0, 0, alloc.width, alloc.height)
 		else:
 			ul = self.untransform_coords(transformed_area[0], transformed_area[1])
 			lr = self.untransform_coords(transformed_area[2], transformed_area[3])
-			rect = gtk.gdk.Rectangle (int(ul[0]), int(ul[1]), int(lr[0]-ul[0]), int(lr[1]-ul[1]))
+			rect =  (int(ul[0]), int(ul[1]), int(lr[0]-ul[0]), int(lr[1]-ul[1]))
 		if self.window:
 			self.window.invalidate_rect (rect, True)
 
@@ -961,8 +961,8 @@ class MMapArea (gtk.DrawingArea):
 		initial = self.selected[0]
 		for x in self.links:
 			if x.parent == initial:
-				other = x.child
-			elif x.child == initial:
+				other = x.get_child()
+			elif x.get_child() == initial:
 				other = x.parent
 			else:
 				continue
@@ -1037,27 +1037,27 @@ class MMapArea (gtk.DrawingArea):
 		
 	def global_key_handler (self, event):
 		thought = None
-		if event.keyval == gtk.keysyms.Up:
+		if event.keyval == Gdk.KEY_Up:
 			thought = self.find_related_thought (RAD_UP)
-		elif event.keyval == gtk.keysyms.Down:
+		elif event.keyval == Gdk.KEY_Down:
 			thought = self.find_related_thought (RAD_DOWN)
-		elif event.keyval == gtk.keysyms.Left:
+		elif event.keyval == Gdk.KEY_Left:
 			thought = self.find_related_thought (RAD_LEFT)
-		elif event.keyval == gtk.keysyms.Right:
+		elif event.keyval == Gdk.KEY_Right:
 			thought = self.find_related_thought (RAD_RIGHT)			
-		elif event.keyval == gtk.keysyms.Delete:
+		elif event.keyval == Gdk.KEY_Delete:
 			self.delete_selected_elements ()
-		elif event.keyval == gtk.keysyms.BackSpace:
+		elif event.keyval == Gdk.KEY_BackSpace:
 			self.delete_selected_elements ()
-		elif event.keyval == gtk.keysyms.Return:
+		elif event.keyval == Gdk.KEY_Return:
 			if self.focus:
 				self.focus.enter()
-		elif event.keyval == gtk.keysyms.Escape:
+		elif event.keyval == Gdk.KEY_Escape:
 			if self.focus and self.focus.creating:
 				self.undo.forget_action()
 			self.unselect_all ()
 			self.focus = None
-		elif event.keyval == gtk.keysyms.a and event.state & gtk.gdk.CONTROL_MASK:
+		elif event.keyval == Gdk.KEY_a and event.get_state() & Gdk.ModifierType.CONTROL_MASK:
 			self.unselect_all ()
 			for t in self.thoughts:
 				t.select ()
@@ -1141,7 +1141,7 @@ class MMapArea (gtk.DrawingArea):
 				if parent and child:
 					break
 			l.set_parent_child (parent, child)
-			if not l.parent or not l.child:
+			if not l.parent or not l.get_child():
 				del_links.append (l)
 		for l in del_links:
 			self.delete_link (l)
@@ -1402,7 +1402,7 @@ class CursorFactory:
 
 	def get_cursor(self, cur_type):
 		if not self.cursors.has_key(cur_type):
-			cur = gtk.gdk.Cursor(cur_type)
+			cur = Gdk.Cursor.new(cur_type)
 			self.cursors[cur_type] = cur
 		return self.cursors[cur_type]
 

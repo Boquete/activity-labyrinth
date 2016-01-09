@@ -19,8 +19,8 @@
 # Boston, MA  02110-1301  USA
 #
 
-import gobject
-import gtk
+from gi.repository import GObject
+from gi.repository import Gtk
 
 import BaseThought
 import utils
@@ -32,26 +32,26 @@ def norm(x, y):
 	mod = math.sqrt(abs((x[0]**2 - y[0]**2) + (x[1]**2 - y[1]**2)))
 	return [abs(x[0]-y[0]) / (mod), abs(x[1] - y[1]) / (mod)]
 
-class Link (gobject.GObject):
-	__gsignals__ = dict (select_link         = (gobject.SIGNAL_RUN_FIRST,
-											    gobject.TYPE_NONE,
-											    (gobject.TYPE_PYOBJECT,)),						 
-						 update_view		 = (gobject.SIGNAL_RUN_LAST,
-						 						gobject.TYPE_NONE,
+class Link (GObject.GObject):
+	__gsignals__ = dict (select_link         = (GObject.SignalFlags.RUN_FIRST,
+											    None,
+											    (GObject.TYPE_PYOBJECT,)),						 
+						 update_view		 = (GObject.SignalFlags.RUN_LAST,
+						 						None,
 						 						()),
-						 popup_requested     = (gobject.SIGNAL_RUN_FIRST,
-						 					    gobject.TYPE_NONE,
-						 					    (gobject.TYPE_PYOBJECT, gobject.TYPE_INT)))
+						 popup_requested     = (GObject.SignalFlags.RUN_FIRST,
+						 					    None,
+						 					    (GObject.TYPE_PYOBJECT, GObject.TYPE_INT)))
 	def __init__ (self, save, parent = None, child = None, start_coords = None, end_coords = None, strength = 2):
 		super (Link, self).__init__()
 		self.parent = parent
-		self.child = child
+		self.get_child() = child
 		self.end = end_coords
 		self.start = start_coords
 		self.strength = strength
 		self.element = save.createElement ("link")
 		self.selected = False
-		self.color = utils.gtk_to_cairo_color(gtk.gdk.color_parse("black"))
+		self.color = utils.gtk_to_cairo_color(Gdk.color_parse("black"))
 		self.model_iter = None
 		self.text = None
 
@@ -91,8 +91,8 @@ class Link (gobject.GObject):
 		return False
 
 	def connects (self, thought, thought2):
-		return (self.parent == thought and self.child == thought2) or \
-				(self.child == thought and self.parent == thought2)
+		return (self.parent == thought and self.get_child() == thought2) or \
+				(self.get_child() == thought and self.parent == thought2)
 
 	def set_end (self, coords):
 		self.end = coords
@@ -110,14 +110,14 @@ class Link (gobject.GObject):
 		return self.strength != 0
 
 	def set_child (self, child):
-		self.child = child
+		self.get_child() = child
 		self.find_ends ()
 
 	def uses (self, thought):
-		return self.parent == thought or self.child == thought
+		return self.parent == thought or self.get_child() == thought
 
 	def find_ends (self):
-		(self.start, self.end) = self.parent.find_connection (self.child)
+		(self.start, self.end) = self.parent.find_connection (self.get_child())
 
 	def draw (self, context):
 		if not self.start or not self.end:
@@ -149,8 +149,8 @@ class Link (gobject.GObject):
 			# Probably shouldn't do this, but its safe now
 			self.start = (self.parent.ul[0]-((self.parent.ul[0]-self.parent.lr[0]) / 2.), \
 						  self.parent.ul[1]-((self.parent.ul[1]-self.parent.lr[1]) / 2.))
-			self.end = (self.child.ul[0]-((self.child.ul[0]-self.child.lr[0]) / 2.), \
-						self.child.ul[1]-((self.child.ul[1]-self.child.lr[1]) / 2.))
+			self.end = (self.get_child().ul[0]-((self.get_child().ul[0]-self.get_child().lr[0]) / 2.), \
+						self.get_child().ul[1]-((self.get_child().ul[1]-self.get_child().lr[1]) / 2.))
 			rem = True
 		cwidth = context.get_line_width ()
 		context.set_line_width (self.strength)
@@ -171,8 +171,8 @@ class Link (gobject.GObject):
 
 	def set_parent_child (self, parent, child):
 		self.parent = parent
-		self.child = child
-		if self.parent and self.child:
+		self.get_child() = child
+		if self.parent and self.get_child():
 			self.find_ends ()
 
 	def update_save (self):
@@ -180,8 +180,8 @@ class Link (gobject.GObject):
 		self.element.setAttribute ("end", str(self.end))
 		self.element.setAttribute ("strength", str(self.strength))
 		self.element.setAttribute ("color", str(self.color))
-		if self.child:
-			self.element.setAttribute ("child", str(self.child.identity))
+		if self.get_child():
+			self.element.setAttribute ("child", str(self.get_child().identity))
 		else:
 			self.element.setAttribute ("child", "None")
 		if self.parent:
@@ -221,11 +221,11 @@ class Link (gobject.GObject):
 				self.child_number = int (tmp)
 				
 	def process_button_down (self, event, transformed):
-		modifiers = gtk.accelerator_get_default_mod_mask ()
+		modifiers = Gtk.accelerator_get_default_mod_mask ()
 		self.button_down = True
 		if event.button == 1:
-			if event.type == gtk.gdk.BUTTON_PRESS:
-				self.emit ("select_link", event.state & modifiers)
+			if event.type == Gdk.EventType.BUTTON_PRESS:
+				self.emit ("select_link", event.get_state() & modifiers)
 				self.emit ("update_view")
 		elif event.button == 3:
 			self.emit ("popup_requested", event, 2)
@@ -236,14 +236,14 @@ class Link (gobject.GObject):
 		return True
 
 	def process_key_press (self, event, mode):
-		if event.keyval == gtk.keysyms.plus or \
-		   event.keyval == gtk.keysyms.KP_Add:
+		if event.keyval == Gdk.KEY_plus or \
+		   event.keyval == Gdk.KEY_KP_Add:
 			self.strength += 1
-		elif (event.keyval == gtk.keysyms.minus or \
-			  event.keyval == gtk.keysyms.KP_Subtract) and \
+		elif (event.keyval == Gdk.KEY_minus or \
+			  event.keyval == Gdk.KEY_KP_Subtract) and \
 			 self.strength > 1:
 			self.strength -= 1
-		elif event.keyval == gtk.keysyms.Escape:
+		elif event.keyval == Gdk.KEY_Escape:
 			self.unselect()
 		else:
 			return False
@@ -266,20 +266,20 @@ class Link (gobject.GObject):
 		return False
 		
 	def set_color_cb(self, widget):
-		dialog = gtk.ColorSelectionDialog(_('Choose Color'))
+		dialog = Gtk.ColorSelectionDialog(_('Choose Color'))
 		dialog.connect('response', self.color_selection_ok_cb)
 		self.color_sel = dialog.colorsel
 		dialog.run()
 		
 	def color_selection_ok_cb(self, dialog, response_id):
-		if response_id == gtk.RESPONSE_OK:
+		if response_id == Gtk.ResponseType.OK:
 			self.color = utils.gtk_to_cairo_color(self.color_sel.get_current_color())
 		dialog.destroy()
 		
 	def get_popup_menu_items(self):
-		image = gtk.Image()
-		image.set_from_stock(gtk.STOCK_COLOR_PICKER, gtk.ICON_SIZE_MENU)
-		item = gtk.ImageMenuItem(_('Set Color'))
+		image = Gtk.Image()
+		image.set_from_stock(Gtk.STOCK_COLOR_PICKER, Gtk.IconSize.MENU)
+		item = Gtk.ImageMenuItem(_('Set Color'))
 		item.set_image(image)
 		item.connect('activate', self.set_color_cb)
 		return [item]

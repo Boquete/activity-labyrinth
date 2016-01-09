@@ -31,12 +31,12 @@ from array import array
 # Not available on OLPC's XO, but not needed neither
 #from Numeric import *
 
-import gtk
+from gi.repository import Gtk
 
 try:
 	# Sugar specific modules
-	from sugar.profile import get_color
-	from sugar.graphics.style import Color
+	from sugar3.profile import get_color
+	from sugar3.graphics.style import Color
 except:
 	pass
 

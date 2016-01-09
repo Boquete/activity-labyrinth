@@ -21,20 +21,20 @@
 #
 
 import utils
-import gtk
+from gi.repository import Gtk
 import sys
 import tarfile
 from os.path import *
 import os
 if os.name != 'nt':
-	import gconf
-import gtk.glade
+	from gi.repository import GConf
+import Gtk.glade
 import MainWindow
 from MapList import MapList
 import TrayIcon
-import pango
+from gi.repository import Pango
 import gnome
-import gobject
+from gi.repository import GObject
 
 import gettext
 _ = gettext.gettext
@@ -44,14 +44,14 @@ AUTHORS = ['Don Scorgie <Don@Scorgie.org>',
 		   'Matthias Vogelgesang <matthias.vogelgesang@gmail.com>',
 		   'Andreas Sliwka <andreas.sliwka@gmail.com>']
 
-class Browser (gtk.Window):
+class Browser (Gtk.Window):
 	COL_ID = 0
 	COL_TITLE = 1
 	COL_MODTIME = 2
 
 	def __init__(self, start_hidden, tray_icon):
 		super(Browser, self).__init__()
-		self.glade=gtk.glade.XML(utils.get_data_file_name('labyrinth.glade'))
+		self.glade=Gtk.glade.XML(utils.get_data_file_name('labyrinth.glade'))
 		self.view = self.glade.get_widget ('MainView')
 		self.populate_view ()
 		self.view.connect ('row-activated', self.open_row_cb)
@@ -90,8 +90,8 @@ class Browser (gtk.Window):
 		
 		# set remembered size
 		if os.name != 'nt':
-			self.config_client = gconf.client_get_default()
-			self.config_client.add_dir ("/apps/labyrinth", gconf.CLIENT_PRELOAD_NONE)
+			self.config_client = GConf.Client.get_default()
+			self.config_client.add_dir ("/apps/labyrinth", GConf.ClientPreloadType.PRELOAD_NONE)
 
 			width = self.config_client.get_int ('/apps/labyrinth/width')
 			height = self.config_client.get_int ('/apps/labyrinth/height')
@@ -121,8 +121,8 @@ class Browser (gtk.Window):
 			self.main_window.set_icon_from_file('images\\labyrinth-24.png')
 		if tray_icon:
 			self.main_window.connect ('delete_event', self.toggle_main_window, None)
-			traymenu = gtk.Menu()
-			quit_item = gtk.MenuItem("Quit")
+			traymenu = Gtk.Menu()
+			quit_item = Gtk.MenuItem("Quit")
 			quit_item.connect("activate",self.quit_clicked)
 			traymenu.add(quit_item)
 			traymenu.show_all()
@@ -190,11 +190,11 @@ class Browser (gtk.Window):
 	def show_help_clicked(self, arg):
 		try:
 			gnome.help_display('labyrinth')
-		except gobject.GError, e:
+		except GObject.GError, e:
 			print _('Unable to display help: %s') % str(e)
 
 	def about_clicked (self, arg):
-		about_dialog = gtk.AboutDialog ()
+		about_dialog = Gtk.AboutDialog ()
 		about_dialog.set_name ("Labyrinth")
 		about_dialog.set_version (utils.get_version())
 		if os.name != 'nt':
@@ -203,7 +203,7 @@ class Browser (gtk.Window):
 			except:
 				pass
 		else:
-			about_dialog.set_logo (gtk.gdk.pixbuf_new_from_file("images\\labyrinth-24.png"))
+			about_dialog.set_logo (GdkPixbuf.Pixbuf.new_from_file("images\\labyrinth-24.png"))
 		about_dialog.set_license (
 	"Labyrinth is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public Licence as published by "
@@ -248,19 +248,19 @@ class Browser (gtk.Window):
 		elif not map.filename:
 			error_message = _("The map has no associated filename.")
 		if error_message:
-			dialog = gtk.MessageDialog (self, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_OK,
+			dialog = Gtk.MessageDialog (self, Gtk.DialogFlags.MODAL, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK,
  									_("Cannot delete this map"))
 			dialog.format_secondary_text (error_message)
 			dialog.run ()
 			dialog.hide ()
 			del (dialog)
 			return
-		dialog = gtk.MessageDialog (self, gtk.DIALOG_MODAL, gtk.MESSAGE_WARNING, gtk.BUTTONS_YES_NO,
+		dialog = Gtk.MessageDialog (self, Gtk.DialogFlags.MODAL, Gtk.MessageType.WARNING, Gtk.ButtonsType.YES_NO,
 									_("Do you really want to delete this Map?"))
 		resp = dialog.run ()
 		dialog.hide ()
 		del (dialog)
-		if resp != gtk.RESPONSE_YES:
+		if resp != Gtk.ResponseType.YES:
 			return
 		MapList.delete (map)
 		self.view.emit ('cursor-changed')
@@ -281,16 +281,16 @@ class Browser (gtk.Window):
 		return
 		
 	def import_clicked(self, button, other=None, *data):
-		chooser = gtk.FileChooserDialog(title=_("Open File"), action=gtk.FILE_CHOOSER_ACTION_OPEN, \
-										buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_OK))
+		chooser = Gtk.FileChooserDialog(title=_("Open File"), action=Gtk.FileChooserAction.OPEN, \
+										buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 										
-		filtr = gtk.FileFilter ()
+		filtr = Gtk.FileFilter ()
 		filtr.set_name(_('MAPZ Compressed Map (*.mapz)'))
 		filtr.add_pattern('*.mapz')
 		chooser.add_filter(filtr)
 			
 		response = chooser.run()
-		if response == gtk.RESPONSE_OK:
+		if response == Gtk.ResponseType.OK:
 			filename = chooser.get_filename()
 			tf = tarfile.open(filename)
 			mapname = utils.get_save_dir() + tf.getnames()[0]
@@ -311,19 +311,19 @@ class Browser (gtk.Window):
 			self.config_client.set_int('/apps/labyrinth/width', width)
 			self.config_client.set_int('/apps/labyrinth/height', height)
 		
-		gtk.main_quit ()
+		Gtk.main_quit ()
 
 	def populate_view (self):
-		cellrenderer = gtk.CellRendererText()
-		cellrenderer.set_property("ellipsize", pango.ELLIPSIZE_END)
-		column = gtk.TreeViewColumn(_("Map Name"), cellrenderer, 
+		cellrenderer = Gtk.CellRendererText()
+		cellrenderer.set_property("ellipsize", Pango.EllipsizeMode.END)
+		column = Gtk.TreeViewColumn(_("Map Name"), cellrenderer, 
 									text=self.COL_TITLE)
 		column.set_resizable(True)
 		column.set_expand (True)
 		column.set_sort_column_id (1)
 		self.view.append_column(column)
  
-		col1 = gtk.TreeViewColumn (_("Last Modified"), gtk.CellRendererText(),
+		col1 = Gtk.TreeViewColumn (_("Last Modified"), Gtk.CellRendererText(),
 								   text=self.COL_MODTIME)
 		col1.set_resizable(True)
 		col1.set_sort_column_id (2)

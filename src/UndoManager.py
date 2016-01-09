@@ -19,7 +19,7 @@
 # Boston, MA  02110-1301  USA
 #
 
-import gtk
+from gi.repository import Gtk
 
 # Different modes of operation - redo, undo
 UNDO = 0
